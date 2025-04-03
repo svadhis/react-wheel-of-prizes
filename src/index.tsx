@@ -100,39 +100,33 @@ const WheelComponent = ({
   const onTimerTick = () => {
     frames++
     draw()
-    const duration = new Date().getTime() - spinStart
+
+    const now = Date.now()
+    const elapsed = now - spinStart
     let progress = 0
     let finished = false
-    if (duration < upTime) {
-      progress = duration / upTime
+
+    const totalDuration = upTime + downTime
+
+    if (elapsed < upTime) {
+      progress = elapsed / upTime
       angleDelta = maxSpeed * Math.sin((progress * Math.PI) / 2)
+    } else if (elapsed < totalDuration) {
+      progress = (elapsed - upTime) / downTime
+      angleDelta = maxSpeed * Math.cos((progress * Math.PI) / 2)
     } else {
-      if (winningSegment) {
-        if (currentSegment === winningSegment && frames > segments.length) {
-          progress = duration / upTime
-          angleDelta =
-            maxSpeed * Math.sin((progress * Math.PI) / 2 + Math.PI / 2)
-          progress = 1
-        } else {
-          progress = duration / downTime
-          angleDelta =
-            maxSpeed * Math.sin((progress * Math.PI) / 2 + Math.PI / 2)
-        }
-      } else {
-        progress = duration / downTime
-        angleDelta = maxSpeed * Math.sin((progress * Math.PI) / 2 + Math.PI / 2)
-      }
-      if (progress >= 1) finished = true
+      finished = true
+      angleDelta = 0
     }
 
     angleCurrent += angleDelta
     while (angleCurrent >= Math.PI * 2) angleCurrent -= Math.PI * 2
+
     if (finished) {
       setFinished(true)
-      onFinished(currentSegment)
       clearInterval(timerHandle)
       timerHandle = 0
-      angleDelta = 0
+      onFinished(currentSegment)
     }
   }
 
